@@ -21,29 +21,31 @@ void SmoothL1LossLayer<Dtype>::LayerSetUp(
   }
 }
 
+// LIOR NOTES: switched bottom[0] to bottom[1] to enable hackey
+// training trick where i stack new cls/reg layers over old ones
 template <typename Dtype>
 void SmoothL1LossLayer<Dtype>::Reshape(
   const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
   LossLayer<Dtype>::Reshape(bottom, top);
-  CHECK_EQ(bottom[0]->channels(), bottom[1]->channels());
-  CHECK_EQ(bottom[0]->height(), bottom[1]->height());
-  CHECK_EQ(bottom[0]->width(), bottom[1]->width());
+  CHECK_EQ(bottom[1]->channels(), bottom[1]->channels());
+  CHECK_EQ(bottom[1]->height(), bottom[1]->height());
+  CHECK_EQ(bottom[1]->width(), bottom[1]->width());
   if (has_weights_) {
-    CHECK_EQ(bottom[0]->channels(), bottom[2]->channels());
-    CHECK_EQ(bottom[0]->height(), bottom[2]->height());
-    CHECK_EQ(bottom[0]->width(), bottom[2]->width());
-    CHECK_EQ(bottom[0]->channels(), bottom[3]->channels());
-    CHECK_EQ(bottom[0]->height(), bottom[3]->height());
-    CHECK_EQ(bottom[0]->width(), bottom[3]->width());
+    CHECK_EQ(bottom[1]->channels(), bottom[2]->channels());
+    CHECK_EQ(bottom[1]->height(), bottom[2]->height());
+    CHECK_EQ(bottom[1]->width(), bottom[2]->width());
+    CHECK_EQ(bottom[1]->channels(), bottom[3]->channels());
+    CHECK_EQ(bottom[1]->height(), bottom[3]->height());
+    CHECK_EQ(bottom[1]->width(), bottom[3]->width());
   }
-  diff_.Reshape(bottom[0]->num(), bottom[0]->channels(),
-      bottom[0]->height(), bottom[0]->width());
-  errors_.Reshape(bottom[0]->num(), bottom[0]->channels(),
-      bottom[0]->height(), bottom[0]->width());
+  diff_.Reshape(bottom[1]->num(), bottom[1]->channels(),
+      bottom[1]->height(), bottom[1]->width());
+  errors_.Reshape(bottom[1]->num(), bottom[1]->channels(),
+      bottom[1]->height(), bottom[1]->width());
   // vector of ones used to sum
-  ones_.Reshape(bottom[0]->num(), bottom[0]->channels(),
-      bottom[0]->height(), bottom[0]->width());
-  for (int i = 0; i < bottom[0]->count(); ++i) {
+  ones_.Reshape(bottom[1]->num(), bottom[1]->channels(),
+      bottom[1]->height(), bottom[1]->width());
+  for (int i = 0; i < bottom[1]->count(); ++i) {
     ones_.mutable_cpu_data()[i] = Dtype(1);
   }
 }
